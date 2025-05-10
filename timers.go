@@ -45,6 +45,11 @@ func MeasureCumulative(name string) time.Duration {
 	return defaultTimers.MeasureCumulative(name)
 }
 
+// MeasureAll measures all the timings.
+func MeasureAll() map[string]time.Duration {
+	return defaultTimers.MeasureAll()
+}
+
 // Pause pauses the timing.
 func Pause(name string) {
 	defaultTimers.Pause(name)
@@ -84,6 +89,15 @@ func (t *Timers) MeasureCumulative(name string) time.Duration {
 		t.safeSetSw(name, sw)
 	}
 	return sw.Elapsed()
+}
+
+// MeasureAll measures all the timings.
+func (t *Timers) MeasureAll() map[string]time.Duration {
+	elapsed := make(map[string]time.Duration)
+	for _, name := range t.safeGetNames() {
+		elapsed[name] = t.Measure(name)
+	}
+	return elapsed
 }
 
 // Pause pauses the timing.

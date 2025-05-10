@@ -60,6 +60,36 @@ func TestMeasureCumulative(t *testing.T) {
 	}
 }
 
+func TestMeasureAll(t *testing.T) {
+	tm := GetTimers()
+	tm.Start("m1")
+	time.Sleep(2 * time.Millisecond)
+	t1 := tm.Measure("m1")
+
+	tm.Start("m2")
+	time.Sleep(2 * time.Millisecond)
+	t2 := tm.Measure("m2")
+
+	tm.Start("m3")
+	time.Sleep(2 * time.Millisecond)
+
+	elapsed := tm.MeasureAll()
+	if elapsed["m1"] != t1 || elapsed["m2"] != t2 {
+		t.Errorf("measure all not working")
+	}
+	if elapsed["m3"] <= time.Millisecond {
+		t.Errorf("measure all not working")
+	}
+
+	elapsed2 := MeasureAll()
+	if elapsed2["m1"] != t1 || elapsed2["m2"] != t2 {
+		t.Errorf("timing measure all not working")
+	}
+	if elapsed2["m3"] <= time.Millisecond {
+		t.Errorf("timing measure all not working")
+	}
+}
+
 func TestPauseResume(t *testing.T) {
 	tm := GetTimers()
 

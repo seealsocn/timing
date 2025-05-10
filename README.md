@@ -15,29 +15,33 @@ import (
 )
 
 func main() {
-    timing.Start("total")
-    timing.Start("task13")
+    timers := timing.NewTimers()
 
-    timing.Start("task1")
+    timers.Start("total")
+    timers.Start("task13")
+
+    timers.Start("task1")
     time.Sleep(time.Millisecond)
-    task1Elapsed := timing.Measure("task1")
+    task1Elapsed := timers.Measure("task1")
 
-    timing.Pause("task13")
+    timers.Pause("task13")
 
-    timing.Start("task2")
+    timers.Start("task2")
     time.Sleep(time.Millisecond)
-    task2Elapsed := timing.Measure("task2")
+    task2Elapsed := timers.Measure("task2")
 
-    timing.Resume("task13")
+    timers.Resume("task13")
 
-    timing.Start("task3")
+    timers.Start("task3")
     time.Sleep(time.Millisecond)
-    task3Elapsed := timing.Measure("task3")
+    task3Elapsed := timers.Measure("task3")
 
-    task13Elapsed := timing.Measure("task13")
-    totalElapsed := timing.Measure("total")
+    task13Elapsed := timers.Measure("task13")
+    totalElapsed := timers.Measure("total")
 
     fmt.Printf("Task elapsed\ntask1: %v\ntask2: %v\ntask3: %v\ntask13: %v\ntotal: %v",
         task1Elapsed, task2Elapsed, task3Elapsed, task13Elapsed, totalElapsed)
+
+    fmt.Printf("Measure all: %+v", timers.MeasureAll())
 }
 ```
