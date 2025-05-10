@@ -31,8 +31,8 @@ func GetTimers() *Timers {
 }
 
 // Start starts the timing.
-func Start(name string) {
-	defaultTimers.Start(name)
+func Start(names ...string) {
+	defaultTimers.Start(names...)
 }
 
 // Measure measures the elapsed time, and pause the timing.
@@ -51,23 +51,31 @@ func MeasureAll() map[string]time.Duration {
 }
 
 // Pause pauses the timing.
-func Pause(name string) {
-	defaultTimers.Pause(name)
+func Pause(names ...string) {
+	defaultTimers.Pause(names...)
+}
+
+// PauseAll pauses all the timings.
+func PauseAll() {
+	defaultTimers.PauseAll()
 }
 
 // Resume resumes the timing.
-func Resume(name string) {
-	defaultTimers.Resume(name)
+func Resume(names ...string) {
+	defaultTimers.Resume(names...)
 }
 
 // Start starts the timing.
-func (t *Timers) Start(name string) {
-	sw := t.safeGetSw(name)
-	if sw == nil {
-		sw = NewStopWatch(true)
-		t.safeSetSw(name, sw)
+func (t *Timers) Start(names ...string) {
+	at := time.Now()
+	for _, name := range names {
+		sw := t.safeGetSw(name)
+		if sw == nil {
+			sw = NewStopWatch(true)
+			t.safeSetSw(name, sw)
+		}
+		sw.StartAt(at)
 	}
-	sw.Start()
 }
 
 // Measure measures the elapsed time, and pause the timing.
@@ -101,18 +109,35 @@ func (t *Timers) MeasureAll() map[string]time.Duration {
 }
 
 // Pause pauses the timing.
-func (t *Timers) Pause(name string) {
-	sw := t.safeGetSw(name)
-	if sw != nil {
-		sw.Pause()
+func (t *Timers) Pause(names ...string) {
+	at := time.Now()
+	for _, name := range names {
+		sw := t.safeGetSw(name)
+		if sw != nil {
+			sw.PauseAt(at)
+		}
+	}
+}
+
+// PauseAll pauses all the timings.
+func (t *Timers) PauseAll() {
+	at := time.Now()
+	for _, name := range t.safeGetNames() {
+		sw := t.safeGetSw(name)
+		if sw != nil {
+			sw.PauseAt(at)
+		}
 	}
 }
 
 // Resume resumes the timing.
-func (t *Timers) Resume(name string) {
-	sw := t.safeGetSw(name)
-	if sw != nil {
-		sw.Start()
+func (t *Timers) Resume(names ...string) {
+	at := time.Now()
+	for _, name := range names {
+		sw := t.safeGetSw(name)
+		if sw != nil {
+			sw.StartAt(at)
+		}
 	}
 }
 

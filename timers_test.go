@@ -128,3 +128,15 @@ func TestPauseResume(t *testing.T) {
 		t.Errorf("timing resume not working")
 	}
 }
+
+func TestPauseAll(t *testing.T) {
+	tm := NewTimers("TestPauseAll")
+	tm.Start("m1", "m2", "m3")
+	time.Sleep(2 * time.Millisecond)
+	tm.PauseAll()
+	time.Sleep(2 * time.Millisecond)
+	elapsed := tm.MeasureAll()
+	if elapsed["m1"] > 3*time.Millisecond || elapsed["m2"] > 3*time.Millisecond || elapsed["m3"] > 3*time.Millisecond {
+		t.Errorf("pause all not working")
+	}
+}

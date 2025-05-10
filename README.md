@@ -17,8 +17,7 @@ import (
 func main() {
     timers := timing.NewTimers()
 
-    timers.Start("total")
-    timers.Start("task13")
+    timers.Start("total", "task13")
 
     timers.Start("task1")
     time.Sleep(time.Millisecond)
