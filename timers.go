@@ -30,42 +30,47 @@ func GetTimers() *Timers {
 	return defaultTimers
 }
 
-// Start starts the timing.
+// Start starts the timer.
 func Start(names ...string) {
 	defaultTimers.Start(names...)
 }
 
-// Measure measures the elapsed time, and pause the timing.
+// Measure measures the elapsed time, and pauses the timer.
 func Measure(name string) time.Duration {
 	return defaultTimers.Measure(name)
 }
 
-// MeasureCumulative measures the elapsed time, and do not pause the timing.
-func MeasureCumulative(name string) time.Duration {
-	return defaultTimers.MeasureCumulative(name)
-}
-
-// MeasureAll measures all the timings.
+// MeasureAll measures all the timers.
 func MeasureAll() map[string]time.Duration {
 	return defaultTimers.MeasureAll()
 }
 
-// Pause pauses the timing.
+// Elapsed returns the elapsed time, and does not pause the timer.
+func Elapsed(name string) time.Duration {
+	return defaultTimers.Elapsed(name)
+}
+
+// ElapsedAll returns the elapsed time for all timers, and does not pause them.
+func ElapsedAll() map[string]time.Duration {
+	return defaultTimers.ElapsedAll()
+}
+
+// Pause pauses the timer.
 func Pause(names ...string) {
 	defaultTimers.Pause(names...)
 }
 
-// PauseAll pauses all the timings.
+// PauseAll pauses all the timers.
 func PauseAll() {
 	defaultTimers.PauseAll()
 }
 
-// Resume resumes the timing.
+// Resume resumes the timer.
 func Resume(names ...string) {
 	defaultTimers.Resume(names...)
 }
 
-// Start starts the timing.
+// Start starts the timer.
 func (t *Timers) Start(names ...string) {
 	at := time.Now()
 	for _, name := range names {
@@ -78,7 +83,7 @@ func (t *Timers) Start(names ...string) {
 	}
 }
 
-// Measure measures the elapsed time, and pause the timing.
+// Measure measures the elapsed time, and pauses the timer.
 func (t *Timers) Measure(name string) time.Duration {
 	sw := t.safeGetSw(name)
 	if sw == nil {
@@ -89,8 +94,22 @@ func (t *Timers) Measure(name string) time.Duration {
 	return sw.Elapsed()
 }
 
-// MeasureCumulative measures the elapsed time, and do not pause the timing.
-func (t *Timers) MeasureCumulative(name string) time.Duration {
+// MeasureAll measures the elapsed time for all timers, and pauses them.
+func (t *Timers) MeasureAll() map[string]time.Duration {
+	elapsed := make(map[string]time.Duration)
+	at := time.Now()
+	for _, name := range t.safeGetNames() {
+		sw := t.safeGetSw(name)
+		if sw != nil {
+			sw.PauseAt(at)
+			elapsed[name] = sw.Elapsed()
+		}
+	}
+	return elapsed
+}
+
+// Elapsed returns the elapsed time, and does not pause the timer.
+func (t *Timers) Elapsed(name string) time.Duration {
 	sw := t.safeGetSw(name)
 	if sw == nil {
 		sw = NewStopWatch(true)
@@ -99,16 +118,19 @@ func (t *Timers) MeasureCumulative(name string) time.Duration {
 	return sw.Elapsed()
 }
 
-// MeasureAll measures all the timings.
-func (t *Timers) MeasureAll() map[string]time.Duration {
+// ElapsedAll returns the elapsed time for all timers, and does not pause them.
+func (t *Timers) ElapsedAll() map[string]time.Duration {
 	elapsed := make(map[string]time.Duration)
 	for _, name := range t.safeGetNames() {
-		elapsed[name] = t.Measure(name)
+		sw := t.safeGetSw(name)
+		if sw != nil {
+			elapsed[name] = sw.Elapsed()
+		}
 	}
 	return elapsed
 }
 
-// Pause pauses the timing.
+// Pause pauses the timer.
 func (t *Timers) Pause(names ...string) {
 	at := time.Now()
 	for _, name := range names {
@@ -119,7 +141,7 @@ func (t *Timers) Pause(names ...string) {
 	}
 }
 
-// PauseAll pauses all the timings.
+// PauseAll pauses all the timers.
 func (t *Timers) PauseAll() {
 	at := time.Now()
 	for _, name := range t.safeGetNames() {
@@ -130,7 +152,7 @@ func (t *Timers) PauseAll() {
 	}
 }
 
-// Resume resumes the timing.
+// Resume resumes the timer.
 func (t *Timers) Resume(names ...string) {
 	at := time.Now()
 	for _, name := range names {
@@ -147,21 +169,21 @@ func (t *Timers) Message(name string) string {
 	return fmt.Sprintf("%-8.3f ms %s", ms, name)
 }
 
-// safeGetNames returns the names of the timing StopWatch map.
+// safeGetNames returns the names of the timer map.
 func (t *Timers) safeGetNames() []string {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	return maps.Keys(t.stopWatches)
 }
 
-// safeSetSw sets the StopWatch in the timing map.
+// safeSetSw sets the StopWatch in the timer map.
 func (t *Timers) safeSetSw(name string, sw *StopWatch) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.stopWatches[name] = sw
 }
 
-// safeGetSw returns the StopWatch from the timing map.
+// safeGetSw returns the StopWatch from the timer map.
 func (t *Timers) safeGetSw(name string) *StopWatch {
 	t.lock.Lock()
 	defer t.lock.Unlock()
